@@ -1,0 +1,28 @@
+#include <iostream>
+#include <stdexcept>
+ 
+class Event {
+    int rows_, seats_;
+    char** map_;
+public:
+    Event(int rows,int seats) : rows_(rows), seats_(seats), map_(nullptr) {
+        if(rows<0||seats<0) throw std::invalid_argument("negative dimensions");
+        map_=new char*[rows_]{};
+        try { for(int r=0;r<rows_;++r) map_[r]=new char[seats_]{}; }
+        catch(...) { for(int r=0;r<rows_;++r) delete[] map_[r]; delete[] map_; throw; }
+        std::cout<<"open "<<rows_<<'x'<<seats_<<'\n';
+    }
+    Event(const Event&)=delete;
+    Event& operator=(const Event&)=delete;
+    ~Event() { for(int r=0;r<rows_;++r) delete[] map_[r]; delete[] map_;
+        std::cout<<"close "<<rows_<<'x'<<seats_<<'\n'; }
+    void book(int r,int s) { check(r,s); map_[r][s]='B'; }
+    void cancel(int r,int s) { check(r,s); map_[r][s]=0; }
+    void check(int r,int s) const { if(r<0||r>=rows_||s<0||s>=seats_) throw std::out_of_range("seat"); }
+};
+int main() {
+    Event local(2,3); local.book(0,1); local.cancel(0,1);
+    { Event block(1,2); block.book(0,0); }
+    Event* heap=new Event(1,1); heap->book(0,0); delete heap;
+    Event empty(0,0);
+}
