@@ -1,0 +1,31 @@
+#include <iomanip>
+#include <iostream>
+ 
+class Money {
+    long long paise_;
+    Money(long long totalPaise, bool) : paise_(totalPaise) {}
+public:
+    Money(long long rupees=0,int paise=0) : paise_(rupees*100+paise) {}
+    static Money fromPaise(long long p) { return Money(p,true); }
+    Money operator+(const Money& rhs) const { return fromPaise(paise_+rhs.paise_); }
+    Money operator-(const Money& rhs) const { return fromPaise(paise_-rhs.paise_); }
+    Money& operator+=(const Money& rhs) { paise_+=rhs.paise_; return *this; }
+    bool operator==(const Money& rhs) const { return paise_==rhs.paise_; }
+    bool operator<(const Money& rhs) const { return paise_<rhs.paise_; }
+    friend std::ostream& operator<<(std::ostream& os,const Money& m) {
+        long long v=m.paise_; if(v<0) { os<<'-'; v=-v; }
+        return os<<"Rs "<<v/100<<'.'<<std::setw(2)<<std::setfill('0')<<v%100<<std::setfill(' ');
+    }
+    friend std::istream& operator>>(std::istream& is,Money& m) {
+        long long rupees; char dot; int paise;
+        if(is>>rupees>>dot>>paise && dot=='.') m=Money(rupees*100+(rupees<0?-paise:paise));
+        else is.setstate(std::ios::failbit);
+        return is;
+    }
+};
+int main() {
+    Money a(120,75),b(79,25); Money c=a+b;
+    std::cout<<c<<'\n'<<std::boolalpha<<(c==Money(200))<<'\n';
+    std::cout<<Money(0,75)+Money(0,50)<<'\n';
+    std::cout<<Money(1,0)-Money(2,25)<<'\n';
+}
