@@ -1,0 +1,30 @@
+#include <cstring>
+#include <iostream>
+#include <string>
+#include <utility>
+ 
+class Text {
+    char* data_;
+    static std::size_t len(const char* s) { return std::strlen(s); }
+public:
+    explicit Text(const char* s="") : data_(new char[len(s)+1]) { std::strcpy(data_,s); }
+    Text(const Text& x) : data_(new char[len(x.data_)+1]) { std::strcpy(data_,x.data_); }
+    Text& operator=(Text x) noexcept { swap(x); return *this; }
+    ~Text() { delete[] data_; }
+    void swap(Text& x) noexcept { std::swap(data_,x.data_); }
+    Text& operator+=(const Text& x) {
+        std::size_t a=len(data_),b=len(x.data_); char* fresh=new char[a+b+1];
+        std::memcpy(fresh,data_,a); std::memcpy(fresh+a,x.data_,b+1);
+        delete[] data_; data_=fresh; return *this;
+    }
+    friend Text operator+(Text a,const Text& b) { a+=b; return a; }
+    friend bool operator==(const Text& a,const Text& b) { return std::strcmp(a.data_,b.data_)==0; }
+    friend bool operator!=(const Text& a,const Text& b) { return !(a==b); }
+    friend std::ostream& operator<<(std::ostream& o,const Text& t) { return o<<t.data_; }
+};
+int main() {
+    Text a("Hello "),b("C++"),c("!"); Text joined=a+b+c;
+    Text empty; Text longText("A deliberately longer SMS message for ownership testing.");
+    a=a;
+    std::cout<<joined<<' '<<empty<<' '<<longText<<' '<<std::boolalpha<<(a!=b)<<'\n';
+}
