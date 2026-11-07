@@ -1,0 +1,31 @@
+#include <iostream>
+#include <stdexcept>
+#include <string>
+#include <vector>
+ 
+struct Time {
+    int h=0,m=0,s=0;
+    Time& operator++() { if(++s==60){s=0;if(++m==60){m=0;++h;}} return *this; }
+    Time operator++(int) { Time old=*this; ++(*this); return old; }
+    bool operator==(const Time& x) const { return h==x.h&&m==x.m&&s==x.s; }
+    bool operator<(const Time& x) const { return h*3600+m*60+s<x.h*3600+x.m*60+x.s; }
+    friend std::ostream& operator<<(std::ostream& o,const Time& t) {
+        return o<<t.h<<':'<<(t.m<10?"0":"")<<t.m<<':'<<(t.s<10?"0":"")<<t.s;
+    }
+};
+struct Track { std::string name; };
+class Playlist {
+    std::vector<Track> tracks_;
+public:
+    Playlist(std::initializer_list<Track> t):tracks_(t){}
+    Track& operator[](int i) { if(i<0||static_cast<std::size_t>(i)>=tracks_.size()) throw std::out_of_range("playlist index"); return tracks_[static_cast<std::size_t>(i)]; }
+    const Track& operator[](int i) const { if(i<0||static_cast<std::size_t>(i)>=tracks_.size()) throw std::out_of_range("playlist index"); return tracks_[static_cast<std::size_t>(i)]; }
+    std::size_t size() const { return tracks_.size(); }
+};
+int main() {
+    Time t{0,0,5}; Time a=t++; Time b=++t;
+    std::cout<<a<<' '<<b<<' '<<t<<'\n';
+    Time rollover{0,59,59}; ++rollover; std::cout<<rollover<<'\n';
+    Playlist list{{"Intro"},{"Main"}}; std::cout<<list[1].name<<'\n';
+    try { (void)list[-1]; } catch(const std::out_of_range& e) { std::cout<<e.what()<<'\n'; }
+}
