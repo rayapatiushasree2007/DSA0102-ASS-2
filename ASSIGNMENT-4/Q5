@@ -1,0 +1,22 @@
+#include "cart.h"
+
+int main() {
+    std::cout << std::fixed << std::setprecision(2);
+    const int N = 3;
+    Cart* carts[N] = { new Cart, new Cart, new Cart };
+    carts[0]->add("Rice", 100);
+    carts[1]->add("Dal", 250);
+    carts[2]->add("Oil", 180);
+
+    int best = 0;                                      // indexing version
+    for (int i = 1; i < N; ++i)
+        if (carts[i]->total() > carts[best]->total()) best = i;
+    std::cout << "Highest total (indexing): " << carts[best]->total() << " (cart " << best << ")\n";
+
+    Cart** bp = carts;                                 // pointer-arithmetic version
+    for (Cart** it = carts + 1; it < carts + N; ++it)
+        if ((*it)->total() > (*bp)->total()) bp = it;
+    std::cout << "Highest total (pointer):  " << (*bp)->total() << " (cart " << (bp - carts) << ")\n";
+
+    for (int i = 0; i < N; ++i) delete carts[i];
+}
