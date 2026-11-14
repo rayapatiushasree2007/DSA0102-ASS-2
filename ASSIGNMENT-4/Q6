@@ -1,0 +1,24 @@
+#include "fleet.h"
+
+int main() {
+    cout << fixed << setprecision(2);
+    Vehicle* fleet[5] = {
+        new Bicycle("BI-01", 100),
+        new TwoWheeler("TW-07", 300, 8.0, Date(15, 12, 2026)),
+        new Car("CR-21", 1500, 35.0, Date(10, 1, 2027), 5),
+        new ElectricCar("EV-05", 2000, 80.0, Date(20, 2, 2027), 5, 60.0),
+        new ElectricBus("EB-09", 6000, 90.0, Date(1, 3, 2027), 40, 200.0)   // only this line is new
+    };
+    const int    days[5]   = {2, 2, 4, 2, 1};
+    const int    agreed[5] = {2, 2, 3, 2, 1};
+    const double used[5]   = {0, 3, 10, 25, 50};
+
+    for (int i = 0; i < 5; ++i) fleet[i]->rent();                     // rent every type
+    for (int i = 0; i < 5; ++i) {                                     // return with late charge
+        double total = fleet[i]->giveBack(days[i], agreed[i], used[i]);
+        cout << fleet[i]->type() << ' ' << fleet[i]->reg() << " : Rs " << total
+             << " (late " << fleet[i]->lateFee(days[i], agreed[i]) << ")\n";
+    }
+    listFleet(fleet, 5);
+    for (Vehicle* v : fleet) delete v;
+}
