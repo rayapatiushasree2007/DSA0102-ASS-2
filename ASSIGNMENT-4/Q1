@@ -1,0 +1,86 @@
+#include <iomanip>
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
+class Staff {
+    std::string name_;
+    int id_;
+public:
+    Staff(std::string n, int i) : name_(std::move(n)), id_(i) {}
+    virtual ~Staff() = default;
+    virtual double pay() const = 0;
+    const std::string& name() const { return name_; }
+    int id() const { return id_; }
+};
+
+class SalariedStaff : public Staff {
+protected:
+    double basic_;
+    static constexpr double DA_RATE = 0.42;
+    double da() const { return basic_ * DA_RATE; }
+public:
+    SalariedStaff(std::string n, int i, double b) : Staff(std::move(n), i), basic_(b) {
+        if (b < 0) throw std::invalid_argument("basic pay cannot be negative");
+    }
+    double pay() const override { return basic_ + da(); }
+};
+
+class Professor : public SalariedStaff {
+    double research_;
+public:
+    Professor(std::string n, int i, double b, double r)
+        : SalariedStaff(std::move(n), i, b), research_(r) {}
+    double pay() const override { return SalariedStaff::pay() + research_; }
+};
+
+class LabAssistant : public SalariedStaff {
+public:
+    LabAssistant(std::string n, int i, double b) : SalariedStaff(std::move(n), i, b) {}
+    double pay() const override { return SalariedStaff::pay(); }
+};
+
+class GuestFaculty : public Staff {
+    double hours_, rate_;
+public:
+    GuestFaculty(std::string n, int i, double h, double r)
+        : Staff(std::move(n), i), hours_(h), rate_(r) {}
+    double pay() const override { return hours_ * rate_; }
+};
+
+// New category added later: no existing class is edited
+class ContractStaff : public Staff {
+    double monthly_;
+public:
+    ContractStaff(std::string n, int i, double m) : Staff(std::move(n), i), monthly_(m) {}
+    double pay() const override { return monthly_; }
+};
+
+int main() {
+    std::vector<std::unique_ptr<Staff>> all;
+    all.push_back(std::make_unique<Professor>("Dr. Rao", 101, 50000, 8000));
+    all.push_back(std::make_unique<LabAssistant>("Meena", 102, 20000));
+    all.push_back(std::make_unique<GuestFaculty>("Arun", 201, 12, 1500));
+
+    double total = 0;
+    std::cout << std::fixed << std::setprecision(2);
+    for (const auto& s : all) {
+        std::cout << s->name() << " (" << s->id() << "): " << s->pay() << "\n";
+        total += s->pay();
+    }
+    std::cout << "Total payroll: " << total << "\n";
+
+    std::cout << "\n-- After adding a ContractStaff (no existing class edited) --\n";
+    all.push_back(std::make_unique<ContractStaff>("Kiran", 301, 30000));
+    total = 0;
+    for (const auto& s : all) {
+        std::cout << s->name() << " (" << s->id() << "): " << s->pay() << "\n";
+        total += s->pay();
+    }
+    std::cout << "Total payroll: " << total << "\n";
+
+    try { LabAssistant bad("Bad", 999, -5000); }
+    catch (const std::invalid_argument& e) { std::cout << "Rejected: " << e.what() << "\n"; }
+}
