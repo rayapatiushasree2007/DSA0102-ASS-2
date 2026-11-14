@@ -1,0 +1,28 @@
+#include <iomanip>
+#include <iostream>
+#include <memory>
+#include <vector>
+
+class Account {
+public:
+    virtual ~Account() = default;
+    virtual double rate() const = 0;                       // percent per year
+    double interest(double principal) const { return principal * rate() / 100; }
+};
+class RegularAccount : public Account {
+public:
+    double rate() const override { return 3.5; }
+};
+class SeniorAccount : public Account {
+    std::vector<double> history = std::vector<double>(100);
+public:
+    double rate() const override { return 4.0; }
+};
+
+int main() {
+    std::vector<std::unique_ptr<Account>> v;
+    v.push_back(std::make_unique<RegularAccount>());
+    v.push_back(std::make_unique<SeniorAccount>());
+    std::cout << std::fixed << std::setprecision(2);
+    for (const auto& a : v) std::cout << a->interest(10000) << "\n";
+}
